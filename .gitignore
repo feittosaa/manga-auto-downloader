@@ -1,0 +1,23 @@
+# Dados locais (biblioteca, estado, config do Komga)
+data/
+logs/
+
+# Segredos
+.env
+cookies*.txt
+*.local.yaml
+
+# Config real das fontes (manter só o exemplo versionado)
+config/sources.yaml
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+*.egg-info/
+dist/
+build/
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/

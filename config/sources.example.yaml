@@ -1,0 +1,12 @@
+# Exemplo de configuração de fonte. Copie para sources.yaml (não versionado).
+# Use apenas fontes cujos termos permitam o download.
+sources:
+  minha-fonte:
+    base_url: "https://exemplo.invalid"
+    library_dir: "data/library"
+    downloads_dir: "data/downloads"
+    state_dir: "data/state"
+    concurrency: 1          # baixa e configurável
+    timeout_seconds: 30
+    max_retries: 5
+    backoff_seconds: 2      # espera progressiva
