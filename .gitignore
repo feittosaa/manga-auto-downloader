@@ -21,3 +21,6 @@ build/
 .pytest_cache/
 .ruff_cache/
 .mypy_cache/
+
+# Adaptadores privados de fonte (não publicar)
+bot/src/mangashelf/sources/*_local.py
