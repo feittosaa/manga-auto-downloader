@@ -1,0 +1,2 @@
+# manga-auto-downloader
+MAD
