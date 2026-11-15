@@ -12,7 +12,7 @@ class Chapter:
     url: str
 
 
-USER_AGENT = "mangashelf/0.1 (uso pessoal)"
+USER_AGENT = "mad/0.1 (uso pessoal)"
 
 
 class Source(Protocol):

@@ -1,7 +1,7 @@
 services:
   komga:
     image: gotson/komga:latest
-    container_name: mangashelf-komga
+    container_name: mad-komga
     user: "${PUID:-1000}:${PGID:-1000}"
     ports:
       - "25600:25600"

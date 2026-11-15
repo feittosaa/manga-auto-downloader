@@ -1,4 +1,4 @@
-"""CLI do MangaShelf."""
+"""CLI do MAD."""
 from __future__ import annotations
 
 import argparse

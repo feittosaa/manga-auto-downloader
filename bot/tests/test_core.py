@@ -4,10 +4,10 @@ from decimal import Decimal
 import httpx
 import pytest
 
-from mangashelf.archive import validate_cbz
-from mangashelf.downloader import DownloadError, download_cbz
-from mangashelf.library import chapter_filename, find_gaps, list_chapters
-from mangashelf.state import State
+from mad.archive import validate_cbz
+from mad.downloader import DownloadError, download_cbz
+from mad.library import chapter_filename, find_gaps, list_chapters
+from mad.state import State
 
 
 def make_cbz(path, images=("001.jpg",)):
@@ -81,7 +81,7 @@ def test_state(tmp_path):
 
 
 def test_example_discover():
-    from mangashelf.sources.example import ExampleSource
+    from mad.sources.example import ExampleSource
 
     def handler(req):
         assert req.url.path == "/serie.json"
@@ -96,7 +96,7 @@ def test_example_discover():
 def test_move_cross_device_fallback(tmp_path, monkeypatch):
     import os
 
-    from mangashelf import downloader
+    from mad import downloader
 
     src = make_cbz(tmp_path / "src.part")
     dest = tmp_path / "out" / "a.cbz"
