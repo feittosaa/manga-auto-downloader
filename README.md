@@ -1,39 +1,43 @@
-# MangaShelf 📚
+# MAD — Manga Auto Downloader
 
-Biblioteca pessoal de mangás *self-hosted*: um bot em Python organiza arquivos `.cbz` e o [Komga](https://komga.org/) serve a coleção para leitura no navegador, no PC ou no iPad.
+**MAD (Manga Auto Downloader)** é uma solução *self-hosted* para download, organização e gerenciamento de uma biblioteca pessoal de mangás.
 
-O projeto **não tem leitor próprio**. Ele cuida da parte de arquivos (baixar, validar, nomear, organizar) e deixa catálogo, leitura e progresso para o Komga.
+O projeto utiliza um bot em Python para baixar, validar e organizar capítulos em arquivos `.cbz`, enquanto o [Komga](https://komga.org/) disponibiliza a coleção para leitura pelo navegador, seja no PC, tablet ou iPad.
+
+O MAD **não possui um leitor próprio**. Seu objetivo é automatizar o gerenciamento dos arquivos, deixando o catálogo, a leitura e o acompanhamento do progresso sob responsabilidade do Komga.
 
 ## Como funciona
 
 ```text
-Fonte configurada ──► Bot Python (CLI) ──► Biblioteca local (CBZ) ──► Komga ──► Navegador (PC / iPad)
+Fonte configurada → MAD (Python CLI) → Biblioteca local (CBZ) → Komga → Navegador
 ```
 
-- **Bot:** descobre capítulos, baixa para um arquivo `.part`, valida o CBZ e só então move para a biblioteca. Retoma de onde parou e nunca sobrescreve um arquivo válido.
-- **Komga:** indexa a pasta da biblioteca (somente leitura) e guarda o progresso de leitura.
-- O bot não depende do banco de dados do Komga: a integração é só pela pasta de arquivos.
+- **MAD:** Descobre capítulos, realiza downloads temporários em arquivos `.part`, valida os arquivos CBZ e os organiza na biblioteca. Permite retomar downloads interrompidos sem sobrescrever arquivos válidos.
+- **Komga:** Indexa a biblioteca em modo somente leitura, disponibiliza os mangás pelo navegador e gerencia o progresso de leitura.
+- **Integração:** A comunicação entre MAD e Komga ocorre pela biblioteca de arquivos, sem dependência direta do banco de dados do Komga.
 
 ## Requisitos
 
 - Python 3.12+
 - Docker e Docker Compose
 
-## Início rápido
+## Instalação
 
-### 1. Subir o Komga
+### 1. Iniciar o Komga
 
 ```bash
-cp .env.example .env          # ajuste PUID/PGID com `id -u` e `id -g`
+cp .env.example .env
 mkdir -p data/komga data/library data/downloads data/state logs
 docker compose up -d
 ```
 
-Abra `http://localhost:25600`, crie a conta de administrador e adicione `/data` como pasta da biblioteca.
+Configure `PUID` e `PGID` no arquivo `.env` utilizando os valores retornados por `id -u` e `id -g`.
 
-> Para guardar a biblioteca em outro disco, mova `data/library` para lá e deixe um link simbólico no lugar.
+Acesse `http://localhost:25600`, crie uma conta de administrador e adicione `/data` como diretório da biblioteca.
 
-### 2. Instalar o bot
+> Para armazenar os mangás em outro disco, mova `data/library` para o local desejado e crie um link simbólico apontando para ele.
+
+### 2. Instalar o MAD
 
 ```bash
 python3 -m venv .venv
@@ -41,60 +45,121 @@ python3 -m venv .venv
 .venv/bin/pytest bot
 ```
 
-### 3. Configurar uma fonte
+### 3. Configurar as fontes
 
 ```bash
-cp config/sources.example.yaml config/sources.yaml   # não é versionado
+cp config/sources.example.yaml config/sources.yaml
 ```
 
-Edite o arquivo com a URL base, as pastas e os limites de download.
+Edite `config/sources.yaml` para definir as fontes, os diretórios e os limites de download.
+
+O arquivo de configuração não é versionado.
 
 ## Comandos
 
 ```bash
-mangashelf discover --source <fonte> --series <serie>                 # lista capítulos
-mangashelf download --source <fonte> --series <serie> [--from N --to M]  # baixa (retoma sozinho)
-mangashelf verify   --series "Nome da Série"                          # valida CBZ e acha lacunas
-mangashelf status   --series <serie>                                  # resumo do estado
+# Descobrir capítulos disponíveis
+mad discover --source <fonte> --series <serie>
+
+# Baixar capítulos
+mad download --source <fonte> --series <serie> [--from N --to M]
+
+# Validar arquivos e identificar capítulos ausentes
+mad verify --series "Nome da Série"
+
+# Consultar o estado dos downloads
+mad status --series <serie>
 ```
 
-Depois de baixar, peça ao Komga para **escanear os arquivos da biblioteca** (o Komga não detecta arquivos novos sozinho).
+Os downloads podem ser retomados automaticamente após interrupções.
+
+Após adicionar novos arquivos à biblioteca, execute uma verificação dos arquivos pelo Komga para atualizar o catálogo.
 
 ## Organização da biblioteca
 
 ```text
-data/library/Nome da Série/
-├── Capitulo_001.cbz
-├── Capitulo_002.cbz
-└── Capitulo_010.5.cbz      # capítulos decimais são suportados
+data/library/
+└── Nome da Série/
+    ├── Capitulo_001.cbz
+    ├── Capitulo_002.cbz
+    └── Capitulo_010.5.cbz
 ```
 
-## Estrutura do repositório
+O MAD suporta capítulos numerados, incluindo numerações decimais.
+
+## Estrutura do projeto
 
 ```text
-compose.yaml               Komga via Docker Compose
-config/                    exemplo de configuração das fontes
-bot/src/mangashelf/
-├── cli.py                 comandos
-├── downloader.py          download com .part, retentativas e backoff
-├── archive.py             validação de CBZ
-├── library.py             nomes, ordenação e lacunas
-├── state.py               estado em SQLite
-└── sources/               adaptadores de fonte (base.py define o contrato)
+compose.yaml
+config/
+bot/
+└── src/
+    └── mad/
+        ├── cli.py
+        ├── downloader.py
+        ├── archive.py
+        ├── library.py
+        ├── state.py
+        └── sources/
 ```
 
-## Escrevendo um adaptador de fonte
+| Componente | Responsabilidade |
+|---|---|
+| `compose.yaml` | Configuração do Komga via Docker Compose |
+| `config/` | Configurações e exemplos de fontes |
+| `cli.py` | Interface de linha de comando |
+| `downloader.py` | Downloads, retentativas e controle de falhas |
+| `archive.py` | Validação dos arquivos CBZ |
+| `library.py` | Organização, nomenclatura e identificação de capítulos ausentes |
+| `state.py` | Persistência do estado em SQLite |
+| `sources/` | Adaptadores para diferentes fontes |
 
-Um adaptador implementa `discover(series) -> list[Chapter]`, retornando o número e a URL de download de cada capítulo, e é registrado em `sources/__init__.py`. O restante (download, validação, estado, CLI) é reaproveitado.
+## Adaptadores de fontes
+
+O MAD utiliza uma arquitetura extensível que permite adicionar diferentes fontes de download.
+
+Cada adaptador implementa o método:
+
+```python
+discover(series) -> list[Chapter]
+```
+
+O método retorna os capítulos disponíveis e suas respectivas URLs. Novos adaptadores devem ser registrados em `sources/__init__.py`.
+
+As funcionalidades de download, validação, organização e persistência são compartilhadas entre os adaptadores.
 
 ## Acesso remoto
 
-Use uma VPN privada (por exemplo Tailscale). **Não exponha a porta 25600 diretamente na internet.**
+A biblioteca pode ser acessada por outros dispositivos utilizando o Komga.
+
+Para acesso fora da rede local, recomenda-se uma VPN privada, como [Tailscale](https://tailscale.com/) ou [ZeroTier](https://www.zerotier.com/).
+
+**Não é recomendado expor diretamente a porta 25600 à internet.**
 
 ## Uso responsável
 
-Este projeto é uma ferramenta de organização de arquivos. Use-o **somente com conteúdo que você tem direito de acessar e armazenar** e respeitando os termos de cada fonte. O bot usa concorrência baixa, pausas entre downloads e *backoff*, e não contorna DRM, paywalls, CAPTCHAs ou qualquer controle de acesso. Os autores não fornecem nem hospedam conteúdo.
+O MAD é uma ferramenta destinada à automação e organização de bibliotecas pessoais.
 
-## Status
+Utilize o projeto apenas com conteúdos que você possui autorização para acessar e armazenar, respeitando os direitos autorais e os termos de uso das fontes.
 
-MVP funcional: Komga em Docker, CLI com download retomável, validação e estado. Ideias futuras: atualização incremental, comando `import` para arquivos locais, backup e rescan automático do Komga.
+O projeto utiliza limites de concorrência, intervalos entre downloads e mecanismos de *backoff*. Não implementa mecanismos para contornar DRM, paywalls, CAPTCHAs ou outras restrições de acesso.
+
+Nenhum conteúdo é fornecido ou hospedado pelos autores.
+
+## Status do projeto
+
+**MVP funcional**, incluindo:
+
+- Integração com Komga via Docker.
+- Download automatizado e retomável.
+- Validação e organização de arquivos CBZ.
+- Persistência de estado em SQLite.
+- Interface de linha de comando.
+- Suporte a múltiplas fontes por adaptadores.
+
+### Melhorias planejadas
+
+- Atualização incremental de capítulos.
+- Importação de arquivos locais.
+- Backup automatizado da biblioteca.
+- Sincronização e atualização automática do catálogo Komga.
