@@ -21,7 +21,7 @@ DEFAULT_CONFIG = Path(__file__).resolve().parents[3] / "config" / "sources.yaml"
 
 
 def _parser() -> argparse.ArgumentParser:
-    p = argparse.ArgumentParser(prog="mangashelf")
+    p = argparse.ArgumentParser(prog="mad")
     p.add_argument("--config", type=Path, default=DEFAULT_CONFIG)
     p.add_argument("-v", "--verbose", action="store_true")
     sub = p.add_subparsers(dest="cmd", required=True)
